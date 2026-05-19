@@ -1,317 +1,226 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Sparkles, 
-  MapPin, 
-  Calendar, 
-  Send, 
-  Loader2, 
-  ChevronRight,
-  Clock,
-  Compass
-} from "lucide-react";
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
-
-// Types for the itinerary
-interface POI {
-  name: string;
-  description: string;
-  time?: string;
-}
-
-interface Day {
-  day: number;
-  title: string;
-  pois: POI[];
-}
-
-interface Itinerary {
-  destination: string;
-  duration: string;
-  days: Day[];
-}
+import Link from "next/link";
+import { ArrowRight, Compass, Sparkles, MapPin, Shield, Scroll, CheckCircle } from "lucide-react";
+import Button from "@/components/ui/button";
 
 export default function Home() {
-  const [query, setQuery] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [itinerary, setItinerary] = useState<Itinerary | null>(null);
+  const [selectedIdentity, setSelectedIdentity] = useState("merchant");
 
-  const fetchItinerary = async (searchQuery: string) => {
-    setLoading(true);
-    setItinerary(null);
-    
-    try {
-      // Mock API call stub
-      /*
-      const response = await fetch('/api/generate-itinerary', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: searchQuery }),
-      });
-      const data = await response.json();
-      setItinerary(data);
-      */
-      
-      // Simulating API delay for demonstration
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-      
-      // Mock Data response
-      const mockData: Itinerary = {
-        destination: "Istanbul & Cappadocia",
-        duration: "3 Days",
-        days: [
-          {
-            day: 1,
-            title: "Historic Heart of Istanbul",
-            pois: [
-              { name: "Hagia Sophia", description: "Ancient architectural masterpiece with stunning mosaics.", time: "09:00 AM" },
-              { name: "Blue Mosque", description: "Iconic mosque known for its blue tiles and six minarets.", time: "11:30 AM" },
-              { name: "Grand Bazaar", description: "One of the largest and oldest covered markets in the world.", time: "03:00 PM" }
-            ]
-          },
-          {
-            day: 2,
-            title: "Bosphorus & Modern Vibes",
-            pois: [
-              { name: "Galata Tower", description: "Medieval stone tower offering panoramic views of the city.", time: "10:00 AM" },
-              { name: "Bosphorus Cruise", description: "Scenic boat trip between Europe and Asia.", time: "02:00 PM" },
-              { name: "Istiklal Avenue", description: "Bustling pedestrian street with shops, cafes, and historic trams.", time: "06:00 PM" }
-            ]
-          },
-          {
-            day: 3,
-            title: "Fairytale Cappadocia",
-            pois: [
-              { name: "Hot Air Balloon Flight", description: "Breathtaking sunrise flight over unique rock formations.", time: "05:30 AM" },
-              { name: "Goreme Open Air Museum", description: "UNESCO site with rock-cut churches and frescoes.", time: "10:30 AM" },
-              { name: "Uchisar Castle", description: "Highest point in Cappadocia with panoramic valley views.", time: "03:00 PM" }
-            ]
-          }
-        ]
-      };
-      
-      setItinerary(mockData);
-    } catch (error) {
-      console.error("Failed to fetch itinerary:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const identities = [
+    {
+      id: "merchant",
+      title: "Silk Road Merchant",
+      era: "14th Century Ottoman Era",
+      quote: "My caravans carry Persian silks and Anatolian spices. The roads are long, but the inns of Anatolia are welcoming.",
+      narrative: "Explore the ancient caravanserai networks (Han) of Cappadocia, Hagia Sophia's bustling marketplaces, and trade routes through Konya.",
+      focus: "Historical Caravanserais, Bazaars, Spice Markets",
+      gradient: "from-amber-500 to-orange-600",
+    },
+    {
+      id: "scholar",
+      title: "Byzantine Scholar",
+      era: "9th Century Empire",
+      quote: "Knowledge is the greatest treasure. The monastic cells of Göreme hold secrets carved directly into the living rock.",
+      narrative: "Uncover subterranean cities, Byzantine rock-cut churches with ancient frescoes, and the scholarly history of Ephesus.",
+      focus: "Monastery Frescoes, Rock-cut Cities, Ancient Libraries",
+      gradient: "from-cyan-400 to-blue-600",
+    },
+    {
+      id: "artisan",
+      title: "Ottoman Calligrapher",
+      era: "16th Century Renaissance",
+      quote: "The ink is the light of the mind. Every curve of my pen tells the story of the Golden Horn.",
+      narrative: "Immerse yourself in İznik tile workshops, the majestic dome geometries of Mimar Sinan, and the scriptorial history of Topkapı.",
+      focus: "Sinan Architecture, Ceramics Workshops, Miniature Art",
+      gradient: "from-purple-500 to-pink-600",
+    },
+  ];
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (query.trim()) {
-      fetchItinerary(query);
-    }
-  };
+  const features = [
+    {
+      icon: Sparkles,
+      title: "Magical Narrative Synthesis",
+      desc: "Our AI model synthesizes personalized travel itineraries narrated from your chosen historical persona's voice.",
+    },
+    {
+      icon: Compass,
+      title: "Authentic Footsteps",
+      desc: "Avoid generic tours. Travel exact routes once tread by emperors, merchants, and nomadic travelers.",
+    },
+    {
+      icon: Scroll,
+      title: "Generative Travel Journal",
+      desc: "As you travel, receive daily journal entries written by your digital avatar describing your experiences.",
+    },
+  ];
+
+  const selectedData = identities.find((i) => i.id === selectedIdentity) || identities[0];
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-200 selection:bg-blue-500/30 selection:text-blue-200">
-      {/* Background Orbs */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-900/20 blur-[120px] rounded-full" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-900/20 blur-[120px] rounded-full" />
-      </div>
+    <div className="flex flex-col gap-20 py-8">
+      {/* Hero Section */}
+      <section className="text-center flex flex-col items-center gap-6 max-w-4xl mx-auto py-12 md:py-20 relative">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-panel border-white/10 text-xs font-semibold text-brand-primary tracking-wide mb-2 animate-pulse">
+          <Sparkles className="w-3.5 h-3.5" />
+          The Next Generation of AI Travel
+        </div>
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-none bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+          Step Into a Different Soul. <br />
+          <span className="bg-gradient-to-r from-brand-primary via-amber-400 to-accent-teal bg-clip-text text-transparent glow-text-gold">
+            Explore Anatolia.
+          </span>
+        </h1>
+        <p className="text-lg md:text-xl text-slate-400 max-w-2xl leading-relaxed mt-2">
+          Experience AI-driven identity tourism. Step back in time as a Roman Scholar, an Ottoman Artisan, or a Silk Road Merchant to uncover Turkey's deepest secrets.
+        </p>
 
-      <main className="relative z-10 max-w-5xl mx-auto px-6 py-16 md:py-24">
-        {/* Hero Section */}
-        <div className="text-center mb-16 space-y-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium"
-          >
-            <Sparkles className="w-4 h-4" />
-            <span>Next-Gen Travel Planning</span>
-          </motion.div>
-          
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-5xl md:text-7xl font-bold tracking-tight text-white"
-          >
-            TravelAnatolia
-          </motion.h1>
-          
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-xl md:text-2xl text-slate-400 max-w-2xl mx-auto font-light"
-          >
-            Your Autonomous <span className="text-blue-400 font-medium">Agentic Travel Architect</span>. 
-            Crafting hyper-personalized journeys with AI precision.
-          </motion.p>
+        <div className="flex flex-col sm:flex-row gap-4 mt-6">
+          <Link href="/try-it">
+            <Button variant="glow" size="lg" className="gap-2 group">
+              Begin Your Persona Tour
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </Link>
+          <Link href="/explore">
+            <Button variant="outline" size="lg">
+              Explore Destinations
+            </Button>
+          </Link>
+        </div>
+      </section>
+
+      {/* Identity Preview Showcase */}
+      <section className="flex flex-col gap-8">
+        <div className="text-center max-w-2xl mx-auto flex flex-col gap-2">
+          <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+            Choose Your Lens of History
+          </h2>
+          <p className="text-slate-400 text-sm md:text-base">
+            Select a historical identity to see how it alters your perspective, destination picks, and daily narratives.
+          </p>
         </div>
 
-        {/* Input Form */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="max-w-2xl mx-auto mb-20"
-        >
-          <form onSubmit={handleSubmit} className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl blur opacity-25 group-focus-within:opacity-50 transition duration-500"></div>
-            <div className="relative flex items-center bg-[#0f172a] border border-slate-800 rounded-2xl p-2 shadow-2xl overflow-hidden">
-              <div className="flex-1 flex items-center px-4">
-                <Compass className="w-6 h-6 text-slate-500 mr-3" />
-                <input
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Where do you want to go? (e.g., A 5-day cultural tour of Aegean coast)"
-                  className="w-full bg-transparent border-none focus:ring-0 text-white placeholder-slate-500 py-4 text-lg outline-none"
-                  disabled={loading}
-                />
-              </div>
+        <div className="grid lg:grid-cols-12 gap-8 items-stretch mt-4">
+          {/* Identity Tabs */}
+          <div className="lg:col-span-5 flex flex-col gap-4">
+            {identities.map((id) => (
               <button
-                type="submit"
-                disabled={loading || !query.trim()}
-                className={cn(
-                  "flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300",
-                  loading || !query.trim() 
-                    ? "bg-slate-800 text-slate-500 cursor-not-allowed" 
-                    : "bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20"
-                )}
+                key={id.id}
+                onClick={() => setSelectedIdentity(id.id)}
+                className={`p-6 rounded-3xl text-left transition-all duration-300 ${
+                  selectedIdentity === id.id
+                    ? "glass-panel border-brand-primary/30 shadow-xl shadow-brand-primary/5"
+                    : "hover:bg-white/5 border border-transparent"
+                }`}
               >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Processing</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Generate Itinerary</span>
-                    <Send className="w-4 h-4" />
-                  </>
-                )}
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-bold text-white">{id.title}</h3>
+                  <span className={`text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-gradient-to-r ${id.gradient} text-slate-950`}>
+                    {id.era.split(" ")[0]}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 font-medium mb-1">{id.era}</p>
+                <p className="text-sm text-slate-300 line-clamp-1 italic">"{id.quote}"</p>
               </button>
-            </div>
-          </form>
-        </motion.div>
+            ))}
+          </div>
 
-        {/* Loading State */}
-        <AnimatePresence>
-          {loading && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex flex-col items-center justify-center py-20 space-y-4"
-            >
-              <div className="relative">
-                <div className="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Sparkles className="w-6 h-6 text-blue-400" />
+          {/* Interactive Card Narrative Preview */}
+          <div className="lg:col-span-7 glass-panel p-8 rounded-3xl relative overflow-hidden flex flex-col justify-between border-white/10 group min-h-[350px]">
+            {/* Ambient background glow matching the identity gradient */}
+            <div className={`absolute -right-20 -top-20 w-80 h-80 rounded-full bg-gradient-to-br ${selectedData.gradient} opacity-10 filter blur-[80px] group-hover:opacity-15 transition-opacity duration-500`} />
+
+            <div className="flex flex-col gap-6 relative z-10">
+              <div className="flex items-center gap-2">
+                <div className={`w-8 h-8 rounded-xl bg-gradient-to-r ${selectedData.gradient} flex items-center justify-center`}>
+                  <Compass className="w-4 h-4 text-slate-950" />
                 </div>
-              </div>
-              <p className="text-blue-400 font-medium animate-pulse">
-                Agentic Orchestration in progress...
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Results / Timeline */}
-        <AnimatePresence>
-          {itinerary && !loading && (
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              className="space-y-12"
-            >
-              <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-slate-800 pb-8 gap-4">
                 <div>
-                  <h2 className="text-3xl font-bold text-white mb-2">{itinerary.destination}</h2>
-                  <div className="flex items-center gap-4 text-slate-400">
-                    <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4" /> {itinerary.duration}</span>
-                    <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4" /> Customized Experience</span>
-                  </div>
+                  <h4 className="text-sm font-semibold text-white">{selectedData.title}</h4>
+                  <p className="text-[10px] text-slate-400">{selectedData.era}</p>
                 </div>
               </div>
 
-              <div className="relative">
-                {/* Vertical Line */}
-                <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-blue-600 via-indigo-600 to-transparent md:-translate-x-1/2 hidden sm:block" />
+              <blockquote className="text-lg md:text-xl font-medium text-slate-200 italic border-l-2 border-brand-primary/50 pl-4 py-1">
+                "{selectedData.quote}"
+              </blockquote>
 
-                {itinerary.days.map((day, dayIdx) => (
-                  <div key={day.day} className="relative mb-20 last:mb-0">
-                    {/* Day Marker */}
-                    <div className="flex items-center justify-center md:justify-center mb-8 relative z-10">
-                      <div className="bg-[#0f172a] border-2 border-blue-600 text-blue-400 px-6 py-2 rounded-full font-bold shadow-xl shadow-blue-600/10">
-                        Day {day.day}
-                      </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-8 md:gap-24 items-start">
-                      {/* Day Info */}
-                      <div className={cn(
-                        "space-y-4",
-                        dayIdx % 2 === 0 ? "md:text-right" : "md:order-2"
-                      )}>
-                        <h3 className="text-2xl font-bold text-white">{day.title}</h3>
-                        <p className="text-slate-400 leading-relaxed">
-                          Experience the best of {day.title} with a curated selection of locations designed for maximum immersion.
-                        </p>
-                      </div>
-
-                      {/* POIs */}
-                      <div className={cn(
-                        "space-y-6",
-                        dayIdx % 2 === 0 ? "" : "md:order-1"
-                      )}>
-                        {day.pois.map((poi, poiIdx) => (
-                          <motion.div
-                            key={poi.name}
-                            initial={{ opacity: 0, x: dayIdx % 2 === 0 ? 20 : -20 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: poiIdx * 0.1 }}
-                            className="bg-[#0f172a]/50 border border-slate-800 p-5 rounded-2xl hover:border-blue-500/50 transition-colors group"
-                          >
-                            <div className="flex justify-between items-start mb-2">
-                              <h4 className="font-bold text-white group-hover:text-blue-400 transition-colors">{poi.name}</h4>
-                              {poi.time && (
-                                <span className="flex items-center gap-1.5 text-xs font-mono text-slate-500 bg-slate-800/50 px-2 py-1 rounded">
-                                  <Clock className="w-3 h-3" /> {poi.time}
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-sm text-slate-400">{poi.description}</p>
-                          </motion.div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-semibold text-brand-primary uppercase tracking-wider">Historical Route Narrative</span>
+                <p className="text-sm text-slate-300 leading-relaxed">{selectedData.narrative}</p>
               </div>
-              
-              <div className="text-center pt-12 pb-20">
-                <button className="px-8 py-4 bg-white text-black font-bold rounded-2xl hover:bg-slate-200 transition-colors inline-flex items-center gap-2">
-                  <span>Save Itinerary</span>
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </main>
+            </div>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-900 py-12 px-6 text-center text-slate-600 text-sm">
-        <p>© 2026 TravelAnatolia V2 • Powered by Agentic Intelligence</p>
-      </footer>
+            <div className="border-t border-white/10 pt-6 mt-6 flex flex-wrap gap-4 items-center justify-between relative z-10">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-accent-teal" />
+                <span className="text-xs text-slate-400">
+                  Focus: <strong className="text-white">{selectedData.focus}</strong>
+                </span>
+              </div>
+              <Link href="/try-it" className="text-xs font-bold text-brand-primary flex items-center gap-1 hover:gap-2 transition-all">
+                Try this persona
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="flex flex-col gap-12 border-t border-white/5 pt-16">
+        <div className="text-center max-w-2xl mx-auto flex flex-col gap-2">
+          <h2 className="text-3xl font-bold text-white">How The Magic Works</h2>
+          <p className="text-slate-400 text-sm md:text-base">
+            Using autonomous agentic travel planning to deliver immersive journeys.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8">
+          {features.map((feature, i) => {
+            const Icon = feature.icon;
+            return (
+              <div key={i} className="glass-panel glass-panel-hover p-6 rounded-3xl flex flex-col gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-brand-primary/10 flex items-center justify-center text-brand-primary shadow-inner">
+                  <Icon className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-bold text-white">{feature.title}</h3>
+                <p className="text-sm text-slate-400 leading-relaxed">{feature.desc}</p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Testimonial / Story Callout */}
+      <section className="glass-panel p-8 md:p-12 rounded-3xl relative overflow-hidden flex flex-col items-center text-center gap-6 border-white/10 max-w-4xl mx-auto">
+        <div className="absolute inset-0 bg-gradient-to-tr from-brand-primary/5 via-transparent to-accent-teal/5 pointer-events-none" />
+        <div className="w-12 h-12 rounded-full bg-brand-primary/15 flex items-center justify-center text-brand-primary">
+          <CheckCircle className="w-6 h-6" />
+        </div>
+        <blockquote className="text-xl md:text-2xl font-medium text-slate-200 italic max-w-2xl relative z-10">
+          "I traveled Ephesus as a 2nd-century Roman Philosopher. My digital journal narrated the sights with Stoic wisdom, making me look at ruins with profound, new perspective. Absolutely magical!"
+        </blockquote>
+        <div className="flex flex-col items-center relative z-10">
+          <span className="font-semibold text-white">Alistair V.</span>
+          <span className="text-xs text-slate-500">Identity Traveler from San Francisco</span>
+        </div>
+      </section>
+
+      {/* Quick CTA */}
+      <section className="text-center flex flex-col items-center gap-6 max-w-xl mx-auto py-8">
+        <h2 className="text-3xl font-extrabold text-white">Ready for Identity Tourism?</h2>
+        <p className="text-slate-400 text-sm md:text-base">
+          Start stepping into historical lives. Generate your first identity-driven route and experience Turkey like never before.
+        </p>
+        <Link href="/try-it">
+          <Button variant="glow" size="lg" className="px-10">
+            Get Started Now
+          </Button>
+        </Link>
+      </section>
     </div>
   );
 }
